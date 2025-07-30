@@ -1,38 +1,47 @@
 # app_streamlit.py
 
+import sys
+
+# SQLite fix for chromadb compatibility
+import pysqlite3
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+
 import streamlit as st
 from complete_legal_rag_chatbot import LegalRAGChatbot
 
 st.set_page_config(page_title="Legal RAG Chatbot", layout="wide")
-st.title("📚 Legal Document RAG Chatbot (Local Only)")
+st.title("📚 Legal Document RAG Chatbot (Local - No API Key)")
 
-# Upload and process PDF
-chatbot = LegalRAGChatbot(local=True)
-uploaded = st.file_uploader("Upload your legal PDF", type="pdf")
-if uploaded:
-    status = chatbot.process_pdf(uploaded)
-    st.success(status)
+chatbot = LegalRAGChatbot()
 
-# Initialize session history
+uploaded_file = st.file_uploader("Upload your legal PDF file", type="pdf")
+
+if uploaded_file:
+    with st.spinner("Processing PDF, please wait..."):
+        msg = chatbot.process_pdf(uploaded_file)
+        st.success(msg)
+
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# User question input
-question = st.text_input("Ask a question about the document:")
-if st.button("Send"):
-    if question.strip():
-        answer = chatbot.chat(question)
-        st.session_state.history.append(("You", question))
+st.markdown("---")
+st.write("### Ask questions about the uploaded document")
+
+query = st.text_input("Enter your question here:", key="input_query")
+
+if st.button("Send") and query.strip():
+    with st.spinner("Generating answer..."):
+        answer = chatbot.chat(query.strip())
+        st.session_state.history.append(("You", query.strip()))
         st.session_state.history.append(("Bot", answer))
-    else:
-        st.warning("Please enter a question.")
+        st.experimental_rerun()
 
 # Display chat history
-for speaker, msg in st.session_state.history:
+for speaker, text in st.session_state.history:
     if speaker == "You":
-        st.markdown(f"**You:** {msg}")
+        st.markdown(f"**You:** {text}")
     else:
-        st.markdown(f"**Bot:** {msg}")
+        st.markdown(f"**Bot:** {text}")
 
 st.markdown("---")
-st.caption("Runs entirely locally using DialoGPT-medium for generation.")
+st.caption("Built with ChromaDB + Sentence Transformers + DialoGPT local model running entirely on Streamlit.")
