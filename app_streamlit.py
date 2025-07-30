@@ -1,6 +1,10 @@
 # app_streamlit.py
 
 import sys
+import sys
+import pysqlite3
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+
 
 # SQLite fix for chromadb compatibility
 import pysqlite3
