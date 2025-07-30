@@ -1,7 +1,8 @@
-streamlit>=1.0.0
-chromadb>=0.4.0
+streamlit>=1.18.0
+chromadb==0.4.24
 sentence-transformers>=2.2.0
 transformers>=4.30.0
 torch>=2.0.0
 accelerate>=0.20.0
 markitdown>=0.0.1
+pysqlite3-binary
